@@ -122,6 +122,10 @@ public class Program {
 
   public Program(byte[] ops, ProgramInvoke programInvoke) {
     this(ops, programInvoke, null);
+    this.memory = setupProgramListener(new Memory());
+    this.stack = setupProgramListener(new Stack());
+    this.stack.setSize(4*3);
+    this.memory.addChunks(1);
   }
 
   public Program(byte[] ops, ProgramInvoke programInvoke, InternalTransaction transaction) {
@@ -148,7 +152,7 @@ public class Program {
     this.contractState = setupProgramListener(new ContractState(programInvoke));
     this.trace = new ProgramTrace(config, programInvoke);
 
-    this.transactionHash = transaction.getHash();
+    //this.transactionHash = transaction.getHash();
   }
 
   public ProgramPrecompile getProgramPrecompile() {
