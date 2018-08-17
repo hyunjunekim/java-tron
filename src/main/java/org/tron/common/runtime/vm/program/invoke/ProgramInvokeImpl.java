@@ -47,6 +47,15 @@ public class ProgramInvokeImpl implements ProgramInvoke {
   private int callDeep = 0;
   private boolean isStaticCall = false;
 
+  public ProgramInvokeImpl() {
+	  address = new DataWord();
+	  origin = caller = balance = callValue = new DataWord();
+	  prevHash = new DataWord();
+	  coinbase = new DataWord();
+	  timestamp = new DataWord();
+	  number = new DataWord();
+  }
+
   public ProgramInvokeImpl(DataWord address, DataWord origin, DataWord caller, DataWord balance,
       DataWord callValue, byte[] msgData,
       DataWord lastHash, DataWord coinbase, DataWord timestamp, DataWord number,
