@@ -218,7 +218,7 @@ public class Memory implements ProgramListenerAware {
     return toGrab;
   }
 
-  private void addChunks(int num) {
+  void addChunks(int num) {
     for (int i = 0; i < num; ++i) {
       chunks.add(new byte[CHUNK_SIZE]);
     }

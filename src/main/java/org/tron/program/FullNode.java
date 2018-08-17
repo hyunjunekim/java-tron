@@ -5,10 +5,17 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.tron.common.application.Application;
 import org.tron.common.application.ApplicationFactory;
+import org.tron.common.runtime.vm.VM;
+import org.tron.common.runtime.vm.program.Program;
+import org.tron.common.runtime.vm.program.invoke.ProgramInvokeFactory;
+import org.tron.common.runtime.vm.program.invoke.ProgramInvokeFactoryImpl;
+import org.tron.common.runtime.vm.program.invoke.ProgramInvokeImpl;
 import org.tron.core.Constant;
 import org.tron.core.config.DefaultConfig;
 import org.tron.core.config.args.Args;
 import org.tron.core.db.RevokingDatabase;
+import org.tron.core.exception.ContractExeException;
+import org.tron.core.exception.ContractValidateException;
 import org.tron.core.services.RpcApiService;
 import org.tron.core.services.WitnessService;
 import org.tron.core.services.http.FullNodeHttpApiService;
@@ -20,38 +27,30 @@ public class FullNode {
    * Start the FullNode.
    */
   public static void main(String[] args) throws InterruptedException {
-    logger.info("Full node running.");
-    Args.setParam(args, Constant.TESTNET_CONF);
-    Args cfgArgs = Args.getInstance();
+    // This code is just POC for TVM
+    VM vm = new VM();
+    ProgramInvokeImpl mockInvoke = new ProgramInvokeImpl();
+    // This is byte codes about the smart contrack
+    String s ="5b600056";
+    // 0x5b      - JUMPTEST
+    // 0x60 0x00 - PUSH 0x00
+    // 0x56      - JUMP to 0
 
-    if (cfgArgs.isHelp()) {
-      logger.info("Here is the help message.");
-      return;
+    int len = s.length();
+    byte[] op = new byte[len / 2];
+    for (int i = 0; i < len; i += 2) {
+      op[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                         + Character.digit(s.charAt(i+1), 16));
     }
 
-    DefaultListableBeanFactory beanFactory = new DefaultListableBeanFactory();
-    beanFactory.setAllowCircularReferences(false);
-    AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(beanFactory);
-    context.register(DefaultConfig.class);
-    context.refresh();
-    Application appT = ApplicationFactory.create(context);
-    shutdown(appT);
-    //appT.init(cfgArgs);
-
-    RpcApiService rpcApiService = context.getBean(RpcApiService.class);
-    appT.addService(rpcApiService);
-    if (cfgArgs.isWitness()) {
-      appT.addService(new WitnessService(appT, context));
+    Program program = new Program(op, mockInvoke);
+    try {
+      // The infinite Loop
+      // Like while(1);
+      vm.play(program);
+    } catch (ContractExeException e) {
+      e.printStackTrace();
     }
-    //http
-    FullNodeHttpApiService httpApiService = context.getBean(FullNodeHttpApiService.class);
-    appT.addService(httpApiService);
-
-    appT.initServices(cfgArgs);
-    appT.startServices();
-    appT.startup();
-
-    rpcApiService.blockUntilShutdown();
   }
 
   public static void shutdown(final Application app) {

@@ -126,7 +126,7 @@ public class VM {
 
       program.setLastOp(op.val());
       program.verifyStackSize(op.require());
-      program.verifyStackOverflow(op.require(), op.ret()); //Check not exceeding stack limits
+      //program.verifyStackOverflow(op.require(), op.ret()); //Check not exceeding stack limits
 
       long oldMemSize = program.getMemSize();
       Stack stack = program.getStack();
@@ -295,10 +295,11 @@ public class VM {
       }
 
       // DEBUG System.out.println(" OP IS " + op.name() + " GASCOST IS " + gasCost + " NUM IS " + op.asInt());
-      // program.spendDrop(dropCost, op.name());
+      System.out.println("dropCost : " + dropCost + " : Opcode name : " + op.name());
+      //program.spendGas(dropCost, op.name());
 
       //TODO: recover this after it is ready.
-      // program.checkCPULimit(op.name());
+      //program.checkCPULimit(op.name());
       // logger.info("after opName: {}, {}", op.name(), System.nanoTime() / 1000 - lastTime);
 
       // Execute operation
@@ -1182,7 +1183,7 @@ public class VM {
         case PUSH32: {
           program.step();
           int nPush = op.val() - PUSH1.val() + 1;
-
+          System.out.println("PUSH" + " " + nPush);
           byte[] data = program.sweep(nPush);
 
           if (logger.isInfoEnabled()) {
@@ -1341,12 +1342,14 @@ public class VM {
       if (program.byTestingSuite()) {
         return;
       }
-
+      System.out.println("Start play VM");
       while (!program.isStopped()) {
         this.step(program);
       }
-
+      System.out.println("End play MV");
+      System.out.println(program.isStopped()+"");
     } catch (RuntimeException e) {
+      System.out.println(e);
       program.setRuntimeFailure(e);
     } catch (StackOverflowError soe) {
       logger
